@@ -1,6 +1,6 @@
 # Dinner Done Fast - Recipe Import & Meal Planning App
 
-**Live Demo**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
+**Live Demo**: https://lovable.dev/projects/b7703c4f-436c-4de2-9d8c-ce634582d6c9
 
 ## 🍳 About the Project
 
@@ -37,7 +37,7 @@ Dinner Done Fast (CookTurn) is a streamlined recipe management and meal planning
 
 ## Project info
 
-**URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
+**URL**: https://lovable.dev/projects/b7703c4f-436c-4de2-9d8c-ce634582d6c9
 
 ## How can I edit this code?
 
@@ -45,7 +45,7 @@ There are several ways of editing your application.
 
 **Use Lovable**
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and start prompting.
+Simply visit the [Lovable Project](https://lovable.dev/projects/b7703c4f-436c-4de2-9d8c-ce634582d6c9) and start prompting.
 
 Changes made via Lovable will be committed automatically to this repo.
 
@@ -209,7 +209,7 @@ This project is built with:
 
 ## How can I deploy this project?
 
-Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
+Simply open [Lovable](https://lovable.dev/projects/b7703c4f-436c-4de2-9d8c-ce634582d6c9) and click on Share -> Publish.
 
 ## Can I connect a custom domain to my Lovable project?
 

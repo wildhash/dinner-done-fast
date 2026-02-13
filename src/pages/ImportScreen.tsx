@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ClipboardPaste, Sparkles, ChefHat, Link2, Type, ArrowRight } from "lucide-react";
+import { Sparkles, ChefHat, Link2, Type, ArrowRight, Utensils } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { useToast } from "@/hooks/use-toast";
 import { parseRecipeFromUrl, parseRecipeFromText, getDemoRecipes } from "@/lib/recipes";
 import { addRecipe, canImport } from "@/lib/storage";
 import { Recipe } from "@/lib/types";
@@ -18,6 +19,12 @@ export default function ImportScreen() {
   const [mode, setMode] = useState<"url" | "text">("url");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const { toast } = useToast();
+
+  const importAndNavigate = (recipe: Recipe) => {
+    addRecipe(recipe);
+    navigate(`/recipe/${recipe.id}`);
+  };
 
   const handleGenerate = () => {
     const importCheck = canImport();
@@ -29,14 +36,19 @@ export default function ImportScreen() {
     setLoading(true);
     setTimeout(() => {
       let recipe: Recipe | null = null;
-      if (mode === "url") {
-        recipe = parseRecipeFromUrl(input);
-      } else {
-        recipe = parseRecipeFromText(input);
+      try {
+        recipe = mode === "url" ? parseRecipeFromUrl(input) : parseRecipeFromText(input);
+      } catch {
+        // parse failed
       }
       if (recipe) {
-        addRecipe(recipe);
-        navigate(`/recipe/${recipe.id}`);
+        importAndNavigate(recipe);
+      } else {
+        toast({
+          title: "Couldn't parse that recipe",
+          description: "Try a demo recipe instead.",
+          variant: "destructive",
+        });
       }
       setLoading(false);
     }, 800);
@@ -52,11 +64,22 @@ export default function ImportScreen() {
     setTimeout(() => {
       const recipe = parseRecipeFromUrl(url);
       if (recipe) {
-        addRecipe(recipe);
-        navigate(`/recipe/${recipe.id}`);
+        importAndNavigate(recipe);
       }
       setLoading(false);
     }, 800);
+  };
+
+  const handleUseDemoRecipe = () => {
+    const importCheck = canImport();
+    if (!importCheck.allowed) {
+      navigate("/paywall");
+      return;
+    }
+    const demos = getDemoRecipes();
+    const pick = demos[Math.floor(Math.random() * demos.length)];
+    const recipe: Recipe = { ...pick, id: crypto.randomUUID(), createdAt: Date.now() };
+    importAndNavigate(recipe);
   };
 
   const importInfo = canImport();
@@ -142,6 +165,16 @@ export default function ImportScreen() {
               Generate Plan <ArrowRight className="w-5 h-5" />
             </span>
           )}
+        </Button>
+
+        {/* Use Demo Recipe */}
+        <Button
+          onClick={handleUseDemoRecipe}
+          variant="outline"
+          disabled={loading}
+          className="w-full h-12 rounded-xl text-sm font-medium mt-3"
+        >
+          <Utensils className="w-4 h-4 mr-2" /> Use Demo Recipe
         </Button>
 
         {/* Demo Recipes */}
