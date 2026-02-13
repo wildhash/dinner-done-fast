@@ -3,11 +3,13 @@ import { useParams, useNavigate } from "react-router-dom";
 import { ArrowLeft, Check, Camera, ChevronRight, ChevronLeft, PartyPopper } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { loadState, addCookedSession } from "@/lib/storage";
+import { useToast } from "@/hooks/use-toast";
 import { Recipe } from "@/lib/types";
 
 export default function CookModeScreen() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [recipe, setRecipe] = useState<Recipe | null>(null);
   const [currentStep, setCurrentStep] = useState(0);
   const [completedSteps, setCompletedSteps] = useState<Set<number>>(new Set());
@@ -32,6 +34,18 @@ export default function CookModeScreen() {
 
   const handleFinish = () => {
     if (!recipe) return;
+
+    // Enforce history cap for free users
+    const state = loadState();
+    if (!state.isPro && state.cookedSessions.length >= 3) {
+      toast({
+        title: "History full",
+        description: "Upgrade to Pro for unlimited cooking history.",
+      });
+      navigate("/paywall");
+      return;
+    }
+
     addCookedSession({
       id: crypto.randomUUID(),
       recipeId: recipe.id,
@@ -81,7 +95,6 @@ export default function CookModeScreen() {
   }
 
   const totalSteps = recipe.steps.length;
-  const allDone = completedSteps.size === totalSteps;
 
   return (
     <div className="min-h-screen bg-background flex flex-col">

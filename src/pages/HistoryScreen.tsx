@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, ChefHat, Clock, Trash2 } from "lucide-react";
-import { loadState } from "@/lib/storage";
+import { ArrowLeft, ChefHat, Clock } from "lucide-react";
+import { loadState, getHistory } from "@/lib/storage";
 import { CookedSession } from "@/lib/types";
 
 export default function HistoryScreen() {
@@ -12,7 +12,7 @@ export default function HistoryScreen() {
   useEffect(() => {
     const state = loadState();
     setIsPro(state.isPro);
-    setSessions(state.isPro ? state.cookedSessions : state.cookedSessions.slice(0, 3));
+    setSessions(getHistory(state.isPro));
   }, []);
 
   const totalCooked = loadState().cookedSessions.length;

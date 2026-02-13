@@ -1,17 +1,9 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Crown, Check, X, Sparkles } from "lucide-react";
+import { Crown, Check, Sparkles, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { setProStatus, loadState } from "@/lib/storage";
-
-const freeFeatures = [
-  { text: "5 imports per month", included: true },
-  { text: "Grocery lists", included: true },
-  { text: "Cook mode", included: true },
-  { text: "3 history entries", included: true },
-  { text: "Unlimited imports", included: false },
-  { text: "Unlimited history", included: false },
-  { text: "Pantry match", included: false },
-];
+import { loadState } from "@/lib/storage";
+import { presentPaywall, restorePurchases, getCustomerEntitlements } from "@/lib/billing";
 
 const proFeatures = [
   "Unlimited recipe imports",
@@ -23,10 +15,21 @@ const proFeatures = [
 export default function PaywallScreen() {
   const navigate = useNavigate();
   const state = loadState();
+  const [loading, setLoading] = useState(false);
 
-  const handleUpgrade = () => {
-    setProStatus(true);
-    navigate("/");
+  const handleUpgrade = async () => {
+    setLoading(true);
+    const { purchased } = await presentPaywall();
+    setLoading(false);
+    if (purchased) navigate("/");
+  };
+
+  const handleRestore = async () => {
+    setLoading(true);
+    await restorePurchases();
+    const { isPro } = await getCustomerEntitlements();
+    setLoading(false);
+    if (isPro) navigate("/");
   };
 
   if (state.isPro) {
@@ -52,7 +55,7 @@ export default function PaywallScreen() {
           </div>
           <h1 className="text-3xl font-serif text-foreground mb-2">Upgrade to Pro</h1>
           <p className="text-muted-foreground text-sm">
-            You've used all {loadState().monthlyImports} free imports this month.
+            You've used all {state.monthlyImports} free imports this month.
           </p>
         </div>
 
@@ -78,7 +81,8 @@ export default function PaywallScreen() {
         <div className="space-y-3 mb-8">
           <button
             onClick={handleUpgrade}
-            className="w-full bg-primary text-primary-foreground rounded-2xl p-5 text-left transition-all hover:opacity-90"
+            disabled={loading}
+            className="w-full bg-primary text-primary-foreground rounded-2xl p-5 text-left transition-all hover:opacity-90 disabled:opacity-60"
           >
             <div className="flex items-center justify-between">
               <div>
@@ -86,15 +90,22 @@ export default function PaywallScreen() {
                 <p className="text-sm opacity-80">$39/year · Save 35%</p>
               </div>
               <div className="text-right">
-                <p className="text-2xl font-bold">$3.25</p>
-                <p className="text-xs opacity-70">/month</p>
+                {loading ? (
+                  <Loader2 className="w-6 h-6 animate-spin" />
+                ) : (
+                  <>
+                    <p className="text-2xl font-bold">$3.25</p>
+                    <p className="text-xs opacity-70">/month</p>
+                  </>
+                )}
               </div>
             </div>
           </button>
 
           <button
             onClick={handleUpgrade}
-            className="w-full bg-card border border-border text-foreground rounded-2xl p-5 text-left transition-all hover:border-primary/40"
+            disabled={loading}
+            className="w-full bg-card border border-border text-foreground rounded-2xl p-5 text-left transition-all hover:border-primary/40 disabled:opacity-60"
           >
             <div className="flex items-center justify-between">
               <div>
@@ -111,7 +122,7 @@ export default function PaywallScreen() {
 
         {/* Restore / Skip */}
         <div className="text-center space-y-2">
-          <button onClick={handleUpgrade} className="text-xs text-muted-foreground underline">
+          <button onClick={handleRestore} disabled={loading} className="text-xs text-muted-foreground underline">
             Restore purchase
           </button>
           <br />
