@@ -6,6 +6,8 @@ import { Badge } from "@/components/ui/badge";
 import { loadState } from "@/lib/storage";
 import { scaleIngredients } from "@/lib/recipes";
 import { Recipe, Ingredient } from "@/lib/types";
+import { findMatchingATKRecipes, ATKRecipe } from "@/lib/atk-recipes";
+import ATKSuggestions from "@/components/ATKSuggestions";
 
 const tagColors: Record<string, string> = {
   quick: "bg-success/15 text-success",
@@ -23,6 +25,7 @@ export default function RecipeCardScreen() {
   const [recipe, setRecipe] = useState<Recipe | null>(null);
   const [servings, setServings] = useState(4);
   const [scaledIngredients, setScaledIngredients] = useState<Ingredient[]>([]);
+  const [atkSuggestions, setAtkSuggestions] = useState<ATKRecipe[]>([]);
 
   useEffect(() => {
     const state = loadState();
@@ -31,6 +34,9 @@ export default function RecipeCardScreen() {
       setRecipe(found);
       setServings(found.servings);
       setScaledIngredients(found.ingredients);
+      // Find ATK matches
+      const matches = findMatchingATKRecipes(found, 3);
+      setAtkSuggestions(matches);
     }
   }, [id]);
 
@@ -147,6 +153,9 @@ export default function RecipeCardScreen() {
           ))}
         </div>
       </div>
+
+      {/* ATK Suggestions */}
+      <ATKSuggestions suggestions={atkSuggestions} />
 
       {/* CTA */}
       <div className="px-5">
