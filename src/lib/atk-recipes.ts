@@ -109,23 +109,22 @@ export const ATK_RECIPES: ATKRecipe[] = [
  */
 function calculateSimilarity(str1: string, str2: string): number {
   const words1 = str1.toLowerCase().split(/\s+/);
-  const words2 = str2.toLowerCase().split(/\s+/);
+  const words2Set = new Set(str2.toLowerCase().split(/\s+/));
   
   let matches = 0;
   for (const word1 of words1) {
-    for (const word2 of words2) {
-      if (word1.length > 3 && word2.includes(word1)) {
-        matches++;
-        break;
-      }
-      if (word2.length > 3 && word1.includes(word2)) {
-        matches++;
-        break;
+    if (word1.length > 3) {
+      // Check if word1 exists in words2 or is a substring
+      for (const word2 of words2Set) {
+        if (word2.includes(word1) || word1.includes(word2)) {
+          matches++;
+          break;
+        }
       }
     }
   }
   
-  return matches / Math.max(words1.length, words2.length);
+  return matches / Math.max(words1.length, words2Set.size);
 }
 
 /**
@@ -138,11 +137,14 @@ export function findMatchingATKRecipes(recipe: Recipe, maxResults: number = 3): 
     // Compare recipe title with ATK title
     score += calculateSimilarity(recipe.title, atkRecipe.title) * 3;
     
+    // Pre-compute lowercased ATK ingredients for efficiency
+    const atkIngredientsLower = atkRecipe.ingredients.map(ing => ing.toLowerCase());
+    
     // Compare recipe ingredients with ATK ingredients
     for (const ingredient of recipe.ingredients) {
-      for (const atkIngredient of atkRecipe.ingredients) {
-        if (ingredient.name.toLowerCase().includes(atkIngredient.toLowerCase()) ||
-            atkIngredient.toLowerCase().includes(ingredient.name.toLowerCase())) {
+      const ingredientLower = ingredient.name.toLowerCase();
+      for (const atkIngredient of atkIngredientsLower) {
+        if (ingredientLower.includes(atkIngredient) || atkIngredient.includes(ingredientLower)) {
           score += 1;
         }
       }
